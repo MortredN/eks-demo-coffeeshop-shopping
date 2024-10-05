@@ -37,9 +37,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
   return res.status(200).json({ order: orders[0] })
 })
 
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   let customer = req.customer
-  const { products } = req.body
+  const { products, email, password, name } = req.body
 
   if (!Array.isArray(products) || products.length < 1) {
     return res.status(400).json('No products in cart')
@@ -62,14 +62,33 @@ router.post('/', authenticateToken, async (req, res) => {
     return res.status(400).json('Invalid product')
   }
 
-  if (customerApiUrl) {
-    const infoRes = await fetch(`${customerApiUrl}/me/info`, {
-      headers: { Authorization: req.headers['authorization'] }
-    })
-    customer = (await infoRes.json())?.customer
+  if (!customerApiUrl && !_.isEmpty(email) && !_.isEmpty(password) && !_.isEmpty(name)) {
+    return res.status(500).json('Internal Server Error')
   }
 
-  const newOrder = (
+  let accessToken = null
+  let refreshToken = null
+  if (customerApiUrl) {
+    if (!_.isEmpty(email) && !_.isEmpty(password) && !_.isEmpty(name)) {
+      const registerRes = await fetch(`${customerApiUrl}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name })
+      })
+      const registerData = await registerRes.json()
+      customer = registerData?.customer
+      accessToken = registerData?.accessToken
+      refreshToken = registerData?.refreshToken
+    } else {
+      const infoRes = await fetch(`${customerApiUrl}/me/info`, {
+        method: 'GET',
+        headers: { Authorization: req.headers['authorization'] }
+      })
+      customer = (await infoRes.json())?.customer
+    }
+  }
+
+  let newOrder = (
     await db
       .insert(orderTable)
       .values({
@@ -103,9 +122,13 @@ router.post('/', authenticateToken, async (req, res) => {
   const tax = Math.round(subtotal * 0.13 * 100) / 100
   const total = subtotal + tax
 
-  await db.update(orderTable).set({ subtotal, tax, total }).where(eq(orderTable.id, newOrder.id))
+  newOrder = await db
+    .update(orderTable)
+    .set({ subtotal, tax, total })
+    .where(eq(orderTable.id, newOrder.id))
+    .returning()
 
-  return res.status(200).json({ success: true })
+  return res.status(200).json({ order: newOrder, customer, accessToken, refreshToken })
 })
 
 export default router
