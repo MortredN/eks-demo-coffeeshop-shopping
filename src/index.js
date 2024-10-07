@@ -8,7 +8,7 @@ import routerProduct from './api/product.js'
 import routerOrder from './api/order.js'
 
 const app = express()
-const PORT = process.env.PORT || 4002
+const PORT = 4000
 
 app.use(bodyParser.json())
 app.use(cors())
