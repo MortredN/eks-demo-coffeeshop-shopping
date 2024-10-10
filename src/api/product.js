@@ -14,6 +14,11 @@ router.get('/', async (req, res) => {
 
 router.get('/:subname', async (req, res) => {
   const { subname } = req.params
+
+  if (_.isNil(subname) || subname === 'undefined' || subname === 'null') {
+    return res.status(404).json('Order not found')
+  }
+
   const { createdAt, updatedAt, ...rest } = getTableColumns(productTable)
   const [productResult] = await db
     .select({ ...rest })

@@ -1,6 +1,6 @@
 import express from 'express'
 import _ from 'lodash'
-import { and, eq, getTableColumns, inArray } from 'drizzle-orm'
+import { and, desc, eq, getTableColumns, inArray } from 'drizzle-orm'
 import db from '../db/index.js'
 import { ordersToProductsTable, orderTable, productTable } from '../db/schema.js'
 import { authenticateToken } from '../middlewares/auth.js'
@@ -17,6 +17,7 @@ router.get('/', authenticateToken, async (req, res) => {
     .select({ id, createdAt, total })
     .from(orderTable)
     .where(eq(orderTable.customerId, customer?.id))
+    .orderBy(desc(orderTable.createdAt))
 
   return res.status(200).json({ orders: ordersResult })
 })
@@ -24,6 +25,10 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   let customer = req.customer
   const { id } = req.params
+
+  if (_.isNil(id) || id === 'undefined' || id === 'null') {
+    return res.status(404).json('Order not found')
+  }
 
   const ordersResult = await db
     .select()
@@ -122,11 +127,13 @@ router.post('/', async (req, res) => {
   const tax = Math.round(subtotal * 0.13 * 100) / 100
   const total = subtotal + tax
 
-  newOrder = await db
-    .update(orderTable)
-    .set({ subtotal, tax, total })
-    .where(eq(orderTable.id, newOrder.id))
-    .returning()
+  newOrder = (
+    await db
+      .update(orderTable)
+      .set({ subtotal, tax, total })
+      .where(eq(orderTable.id, newOrder.id))
+      .returning()
+  )[0]
 
   return res.status(200).json({ order: newOrder, customer, accessToken, refreshToken })
 })

@@ -6,5 +6,6 @@ RUN npm install --omit=dev
 
 COPY --chown=node:node . ./
 EXPOSE 4000
+
 USER node
-CMD ["npm", "start"]
+CMD npm run generate && npm run migrate && npm start
