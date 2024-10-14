@@ -16,9 +16,17 @@ npm install
 Add an environment file `.env` for the development environment (Check the `.env.example` file): *Make sure the access & refresh secret on both this and [the other backend](https://github.com/MortredN/eks-demo-coffeeshop-customer) is the same*
 
 ```properties
-DB_URL=postgresql://<username>:<password>@localhost:5432/<database_shopping>
-JWT_ACCESS_SECRET=random_secret_1
-JWT_REFRESH_SECRET=random_secret_2
+# Use either these
+DB_USERNAME=<your-db-username>
+DB_PASSWORD=<your-db-password>
+DB_HOST=<your-db-host>
+DB_PORT=5432
+DB_DBNAME=<your-db-name-shopping>
+# or this
+DB_URL=postgresql://<your-db-username>:<your-db-password>@<your-db-host>/<your-db-name-shopping>
+
+JWT_ACCESS_SECRET=<random_secret_1>
+JWT_REFRESH_SECRET=<random_secret_2>
 API_CUSTOMER_URL=http://localhost:4001
 ```
 
@@ -41,13 +49,27 @@ You can also run this app as a Docker container. Either pull from the above publ
 docker pull mortredn/eks-demo-coffeeshop-shopping:latest
 docker tag mortredn/eks-demo-coffeeshop-shopping:latest eks-demo-coffeeshop-shopping:latest
 
-# Building from local
+# Build from local
 docker build -t eks-demo-coffeeshop-shopping:latest .
 
 # Run the container
 docker run --name eks-demo-coffeeshop-shopping
 -p 4002:4000 \
--e DB_URL=postgresql://<username>:<password>@host.docker.internal:5432/<database_shopping> \
+-e DB_USERNAME=username \
+-e DB_PASSWORD=password \
+-e DB_HOST=host.docker.internal \
+-e DB_PORT=5432 \
+-e DB_DBNAME=database_shopping \
+-e JWT_ACCESS_SECRET=random_secret_1 \
+-e JWT_REFRESH_SECRET=random_secret_2 \
+-e API_CUSTOMER_URL=http://host.docker.internal:4001 \
+-d eks-demo-coffeeshop-shopping:latest
+
+# Or run using DB_URL env
+
+docker run --name eks-demo-coffeeshop-shopping
+-p 4002:4000 \
+-e DB_URL=postgresql://username:password@host.docker.internal:5432/database_shopping \
 -e JWT_ACCESS_SECRET=random_secret_1 \
 -e JWT_REFRESH_SECRET=random_secret_2 \
 -e API_CUSTOMER_URL=http://host.docker.internal:4001 \
