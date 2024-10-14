@@ -66,7 +66,6 @@ docker run --name eks-demo-coffeeshop-shopping
 -d eks-demo-coffeeshop-shopping:latest
 
 # Or run using DB_URL env
-
 docker run --name eks-demo-coffeeshop-shopping
 -p 4002:4000 \
 -e DB_URL=postgresql://username:password@host.docker.internal:5432/database_shopping \
