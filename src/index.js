@@ -12,10 +12,20 @@ const PORT = 4000
 
 app.use(bodyParser.json())
 app.use(cors())
-app.use(morgan("tiny"));
+app.use(morgan('tiny'))
 
-app.use('/product', routerProduct)
-app.use('/order', routerOrder)
+// Health check
+app.get('/', async (req, res) => {
+  return res.status(200).json({ success: true })
+})
+
+const router = express.Router()
+
+router.use('/product', routerProduct)
+router.use('/order', routerOrder)
+
+// AWS ALB does not support path rewrite
+app.use('/api/shopping', router)
 
 app
   .listen(PORT, () => {

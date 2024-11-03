@@ -15,7 +15,8 @@ if (
     port: process.env.DB_PORT ?? 5432,
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_DBNAME
+    database: process.env.DB_DBNAME,
+    ssl: process.env.NODE_ENV != 'development' ? 'require' : false
   })
 } else {
   if (!_.isEmpty(process.env.DB_URL)) {

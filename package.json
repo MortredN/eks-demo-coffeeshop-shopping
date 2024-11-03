@@ -1,5 +1,5 @@
 {
-  "name": "eks-demo-coffeeshop-customer",
+  "name": "eks-demo-coffeeshop-shopping",
   "version": "1.0.0",
   "description": "",
   "main": "./src/index.js",
