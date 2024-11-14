@@ -8,4 +8,4 @@ COPY --chown=node:node . ./
 EXPOSE 4000
 
 USER node
-CMD npm run generate && npm run migrate && npm start
+CMD ["npm", "start"]
